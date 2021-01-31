@@ -51,7 +51,7 @@ router.get("/", asyncHandler(async (req, res, next) => {
 		}
 
 		res.locals.homepage = true;
-		
+
 		// don't need timestamp on homepage "blocks-list", this flag disables
 		res.locals.hideTimestampColumn = true;
 
@@ -69,7 +69,7 @@ router.get("/", asyncHandler(async (req, res, next) => {
 		// promiseResults[0]
 		promises.push(new Promise(async (resolve, reject) => {
 			res.locals.mempoolInfo = await utils.timePromise("promises.index.getMempoolInfo", coreApi.getMempoolInfo());
-			
+
 			resolve();
 		}));
 
@@ -117,7 +117,7 @@ router.get("/", asyncHandler(async (req, res, next) => {
 		res.locals.getblockchaininfo = getblockchaininfo;
 
 		res.locals.difficultyPeriod = parseInt(Math.floor(getblockchaininfo.blocks / coinConfig.difficultyAdjustmentBlockCount));
-			
+
 
 		var blockHeights = [];
 		if (getblockchaininfo.blocks) {
@@ -150,7 +150,7 @@ router.get("/", asyncHandler(async (req, res, next) => {
 		promises.push(new Promise(async (resolve, reject) => {
 			let h = coinConfig.difficultyAdjustmentBlockCount * res.locals.difficultyPeriod;
 			res.locals.difficultyPeriodFirstBlockHeader = await utils.timePromise("promises.index.getBlockHeaderByHeight", coreApi.getBlockHeaderByHeight(h));
-			
+
 			resolve();
 		}));
 
@@ -159,7 +159,7 @@ router.get("/", asyncHandler(async (req, res, next) => {
 
 			res.locals.latestBlocks = latestBlocks;
 			res.locals.blocksUntilDifficultyAdjustment = ((res.locals.difficultyPeriod + 1) * coinConfig.difficultyAdjustmentBlockCount) - latestBlocks[0].height;
-			
+
 			resolve();
 		}));
 
@@ -168,7 +168,7 @@ router.get("/", asyncHandler(async (req, res, next) => {
 
 			promises.push(new Promise(async (resolve, reject) => {
 				res.locals.txStats = await utils.timePromise("promises.index.getTxCountStats", coreApi.getTxCountStats(targetBlocksPerDay / 4, -targetBlocksPerDay, "latest"));
-				
+
 				resolve();
 			}));
 
@@ -180,7 +180,7 @@ router.get("/", asyncHandler(async (req, res, next) => {
 			for (var i = 0; i < chainTxStatsIntervals.length; i++) {
 				promises.push(new Promise(async (resolve, reject) => {
 					res.locals.chainTxStats[chainTxStatsIntervals[i][0]] = await utils.timePromise(`promises.index.getChainTxStats-${chainTxStatsIntervals[i][0]}`, coreApi.getChainTxStats(chainTxStatsIntervals[i][0]));
-					
+
 					resolve();
 				}));
 			}
@@ -190,7 +190,7 @@ router.get("/", asyncHandler(async (req, res, next) => {
 
 			promises.push(new Promise(async (resolve, reject) => {
 				res.locals.chainTxStats[-1] = await utils.timePromise(`promises.index.getChainTxStats-allTime`, coreApi.getChainTxStats(getblockchaininfo.blocks - 1));
-				
+
 				resolve();
 			}));
 		}
@@ -203,7 +203,7 @@ router.get("/", asyncHandler(async (req, res, next) => {
 
 	} catch (err) {
 		utils.logError("238023hw87gddd", err);
-					
+
 		res.locals.userMessage = "Error building page: " + err;
 
 		res.render("index");
@@ -248,7 +248,7 @@ router.get("/node-status", asyncHandler(async (req, res, next) => {
 
 	} catch (err) {
 		utils.logError("32978efegdde", err);
-					
+
 		res.locals.userMessage = "Error building page: " + err;
 
 		res.render("node-status");
@@ -297,7 +297,7 @@ router.get("/mempool-summary", asyncHandler(async (req, res, next) => {
 
 	} catch (err) {
 		utils.logError("390824yw7e332", err);
-					
+
 		res.locals.userMessage = "Error building page: " + err;
 
 		res.render("mempool-summary");
@@ -333,6 +333,7 @@ router.get("/peers", asyncHandler(async (req, res, next) => {
 
 		if (peerIps.length > 0) {
 			res.locals.peerIpSummary = await utils.timePromise("promises.peers.geoLocateIpAddresses", utils.geoLocateIpAddresses(peerIps));
+			res.locals.mapBoxComApiAccessKey = config.credentials.mapBoxComApiAccessKey;
 		}
 
 
@@ -342,7 +343,7 @@ router.get("/peers", asyncHandler(async (req, res, next) => {
 
 	} catch (err) {
 		utils.logError("394rhweghe", err);
-					
+
 		res.locals.userMessage = "Error: " + err;
 
 		res.render("peers");
@@ -598,7 +599,7 @@ router.post("/search", function(req, res, next) {
 				if (!global.txindexAvailable) {
 					req.session.userMessage += noTxIndexMsg;
 				}
-				
+
 				res.redirect("./");
 			});
 		});
@@ -606,7 +607,7 @@ router.post("/search", function(req, res, next) {
 	} else if (!isNaN(query)) {
 		coreApi.getBlockByHeight(parseInt(query)).then(function(blockByHeight) {
 			res.redirect("./block-height/" + query);
-			
+
 		}).catch(function(err) {
 			req.session.userMessage = "No results found for query: " + query;
 
@@ -675,7 +676,7 @@ router.get("/block-height/:blockHeight", asyncHandler(async (req, res, next) => 
 		promises.push(new Promise(async (resolve, reject) => {
 			try {
 				const blockStats = await utils.timePromise("promises.block-height.getBlockStats", coreApi.getBlockStats(result.hash));
-				
+
 				res.locals.result.blockstats = blockStats;
 
 				resolve();
@@ -745,7 +746,7 @@ router.get("/block/:blockHash", asyncHandler(async (req, res, next) => {
 
 		promises.push(new Promise(async (resolve, reject) => {
 			const blockWithTransactions = await utils.timePromise("promises.block-hash.getBlockByHashWithTransactions", coreApi.getBlockByHashWithTransactions(blockHash, limit, offset));
-			
+
 			res.locals.result.getblock = blockWithTransactions.getblock;
 			res.locals.result.transactions = blockWithTransactions.transactions;
 			res.locals.result.txInputsByTransaction = blockWithTransactions.txInputsByTransaction;
@@ -756,7 +757,7 @@ router.get("/block/:blockHash", asyncHandler(async (req, res, next) => {
 		promises.push(new Promise(async (resolve, reject) => {
 			try {
 				const blockStats = await utils.timePromise("promises.block-hash.getBlockStats", coreApi.getBlockStats(blockHash));
-				
+
 				res.locals.result.blockstats = blockStats;
 
 				resolve();
@@ -775,7 +776,7 @@ router.get("/block/:blockHash", asyncHandler(async (req, res, next) => {
 		}));
 
 		await Promise.all(promises);
-		
+
 		res.render("block");
 
 		next();
@@ -866,7 +867,7 @@ router.get("/tx/:transactionId", asyncHandler(async (req, res, next) => {
 
 		res.locals.result = {};
 
-		var txPromise = req.query.blockHeight ? 
+		var txPromise = req.query.blockHeight ?
 				coreApi.getBlockByHeight(parseInt(req.query.blockHeight))
 				.then(block => {
 					res.locals.block = block;
@@ -885,9 +886,9 @@ router.get("/tx/:transactionId", asyncHandler(async (req, res, next) => {
 
 		promises.push(new Promise(async (resolve, reject) => {
 			const utxos = await utils.timePromise("promises.tx.getTxUtxos", coreApi.getTxUtxos(tx));
-			
+
 			res.locals.utxos = utxos;
-				
+
 			resolve();
 		}));
 
@@ -896,7 +897,7 @@ router.get("/tx/:transactionId", asyncHandler(async (req, res, next) => {
 				const mempoolDetails = await utils.timePromise("promises.tx.getMempoolTxDetails", coreApi.getMempoolTxDetails(txid, true));
 
 				res.locals.mempoolDetails = mempoolDetails;
-					
+
 				resolve();
 			}));
 		}
@@ -910,7 +911,7 @@ router.get("/tx/:transactionId", asyncHandler(async (req, res, next) => {
 		}));
 
 		await Promise.all(promises);
-		
+
 		res.render("transaction");
 
 		next();
@@ -935,7 +936,7 @@ router.get("/address/:address", function(req, res, next) {
 	var offset = 0;
 	var sort = "desc";
 
-	
+
 	if (req.query.limit) {
 		limit = parseInt(req.query.limit);
 
@@ -965,7 +966,7 @@ router.get("/address/:address", function(req, res, next) {
 	res.locals.paginationBaseUrl = `./address/${address}?sort=${sort}`;
 	res.locals.transactions = [];
 	res.locals.addressApiSupport = addressApi.getCurrentAddressApiFeatureSupport();
-	
+
 	res.locals.result = {};
 
 	var parseAddressErrors = [];
@@ -987,7 +988,7 @@ router.get("/address/:address", function(req, res, next) {
 			parseAddressErrors.push(utils.logError("u02qg02yqge", err2));
 		}
 
-		
+
 	}
 
 	if (res.locals.addressObj == null) {
@@ -1107,7 +1108,7 @@ router.get("/address/:address", function(req, res, next) {
 										for (var i = 0; i < rawTxResult.transactions.length; i++) {
 											var tx = rawTxResult.transactions[i];
 											var txInputs = rawTxResult.txInputsByTransaction[tx.txid];
-											
+
 											if (handledTxids.includes(tx.txid)) {
 												continue;
 											}
@@ -1217,7 +1218,7 @@ router.get("/address/:address", function(req, res, next) {
 
 			next();
 		});
-		
+
 	}).catch(function(err) {
 		res.locals.pageErrors.push(utils.logError("2108hs0gsdfe", err, {address:address}));
 
@@ -1232,7 +1233,7 @@ router.get("/address/:address", function(req, res, next) {
 router.get("/rpc-terminal", function(req, res, next) {
 	if (!config.demoSite && !req.authenticated) {
 		res.send("RPC Terminal / Browser require authentication. Set an authentication password via the 'BTCEXP_BASIC_AUTH_PASSWORD' environment variable (see .env-sample file for more info).");
-		
+
 		next();
 
 		return;
@@ -1361,7 +1362,7 @@ router.get("/rpc-browser", function(req, res, next) {
 									if (req.query.args[i]) {
 										argValues.push(JSON.parse(req.query.args[i]));
 									}
-									
+
 									break;
 
 								} else {
@@ -1608,7 +1609,7 @@ router.get("/fun", function(req, res, next) {
 	});
 
 	res.locals.historicalData = sortedList;
-	
+
 	res.render("fun");
 
 	next();
