@@ -317,9 +317,10 @@ function satoshisPerUnitOfActiveCurrency() {
 
 		var exchangedAmt = parseInt(dec);
 
-		if (exchangeType == "eur") {
+		if (exchangeType == "krw") {
+			return {amt:addThousandsSeparators(exchangedAmt), unit:`${unitName}/₩`};
+		} else if (exchangeType == "eur") {
 			return {amt:addThousandsSeparators(exchangedAmt), unit:`${unitName}/€`};
-
 		} else {
 			return {amt:addThousandsSeparators(exchangedAmt), unit:`${unitName}/$`};
 		}

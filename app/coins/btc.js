@@ -69,7 +69,7 @@ module.exports = {
 		"signet":"./img/logo/signet.svg"
 	},
 	siteTitlesByNetwork: {
-		"main":"Bitcoin Explorer",
+		"main":"Bitscan.kr",
 		"test":"Testnet Explorer",
 		"regtest":"Regtest Explorer",
 		"signet":"Signet Explorer",
