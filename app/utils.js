@@ -96,13 +96,13 @@ const ipCache = {
 function redirectToConnectPageIfNeeded(req, res) {
 	if (!req.session.host) {
 		req.session.redirectUrl = req.originalUrl;
-		
+
 		res.redirect("/");
 		res.end();
-		
+
 		return true;
 	}
-	
+
 	return false;
 }
 
@@ -111,14 +111,14 @@ function hex2ascii(hex) {
 	for (var i = 0; i < hex.length; i += 2) {
 		str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
 	}
-	
+
 	return str;
 }
 
 function splitArrayIntoChunks(array, chunkSize) {
 	var j = array.length;
 	var chunks = [];
-	
+
 	for (var i = 0; i < j; i += chunkSize) {
 		chunks.push(array.slice(i, i + chunkSize));
 	}
@@ -146,28 +146,28 @@ function splitArrayIntoChunksByChunkCount(array, chunkCount) {
 
 function getRandomString(length, chars) {
 	var mask = '';
-	
+
 	if (chars.indexOf('a') > -1) {
 		mask += 'abcdefghijklmnopqrstuvwxyz';
 	}
-	
+
 	if (chars.indexOf('A') > -1) {
 		mask += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 	}
-	
+
 	if (chars.indexOf('#') > -1) {
 		mask += '0123456789';
 	}
-	
+
 	if (chars.indexOf('!') > -1) {
 		mask += '~`!@#$%^&*()_+-={}[]:";\'<>?,./|\\';
 	}
-	
+
 	var result = '';
 	for (var i = length; i > 0; --i) {
 		result += mask[Math.floor(Math.random() * mask.length)];
 	}
-	
+
 	return result;
 }
 
@@ -229,7 +229,7 @@ function formatCurrencyAmountWithForcedDecimalPlaces(amount, formatType, forcedD
 
 				if (baseStr.indexOf(".") == -1) {
 					returnVal.val = baseStr;
-					
+
 				} else {
 					if (baseStr.length - baseStr.indexOf(".") - 1 > maxValDigits) {
 						returnVal.val = baseStr.substring(0, baseStr.indexOf(".") + maxValDigits + 1);
@@ -255,7 +255,7 @@ function formatCurrencyAmountWithForcedDecimalPlaces(amount, formatType, forcedD
 			}
 		}
 	}
-	
+
 	return amount;
 }
 
@@ -280,19 +280,16 @@ function formatValueInActiveCurrency(amount) {
 		return formatExchangedCurrency(amount, global.currencyFormatType);
 
 	} else {
-		return formatExchangedCurrency(amount, "usd");
+		return formatExchangedCurrency(amount, "krw");
 	}
 }
 
 
 function formatValueInGold(amount) {
-	var currencyFormat = global.currencyFormatType.toLowerCase() || "usd";
-
-	if (global.exchangeRates[currencyFormat] && global.goldExchangeRates[currencyFormat]) {
-		return formatExchangedCurrency(amount, "au");
-
+	if (global.currencyFormatType && global.goldExchangeRates[global.currencyFormatType.toLowerCase()]) {
+		return formatExchangedGold(amount, global.currencyFormatType);
 	} else {
-		return formatExchangedCurrency(amount, "usd");
+		return formatExchangedGold(amount, "krw");
 	}
 }
 
@@ -302,13 +299,13 @@ function satoshisPerUnitOfActiveCurrency() {
 
 		if (!global.exchangeRates[global.currencyFormatType.toLowerCase()]) {
 			// if current display currency is a native unit, default to USD for exchange values
-			exchangeType = "usd";
+			exchangeType = "krw";
 		}
 
 		var dec = new Decimal(1);
 		var one = new Decimal(1);
 		dec = dec.times(global.exchangeRates[exchangeType]);
-		
+
 		// USD/BTC -> BTC/USD
 		dec = one.dividedBy(dec);
 
@@ -326,7 +323,7 @@ function satoshisPerUnitOfActiveCurrency() {
 		} else {
 			return {amt:addThousandsSeparators(exchangedAmt), unit:`${unitName}/$`};
 		}
-		
+
 	}
 
 	return null;
@@ -335,7 +332,7 @@ function satoshisPerUnitOfActiveCurrency() {
 		return formatExchangedCurrency(amount, global.currencyFormatType);
 
 	} else {
-		return formatExchangedCurrency(amount, "usd");
+		return formatExchangedCurrency(amount, "krw");
 	}
 }
 
@@ -345,13 +342,41 @@ function formatExchangedCurrency(amount, exchangeType) {
 		dec = dec.times(global.exchangeRates[exchangeType.toLowerCase()]);
 		var exchangedAmt = parseFloat(Math.round(dec * 100) / 100).toFixed(2);
 
-		if (exchangeType == "eur") {
+		if (exchangeType == "krw") {
+			return "₩" + addThousandsSeparators(exchangedAmt);
+		} else if (exchangeType == "eur") {
 			return "€" + addThousandsSeparators(exchangedAmt);
-
 		} else {
 			return "$" + addThousandsSeparators(exchangedAmt);
 		}
-		
+
+	} else if (exchangeType == "au") {
+		if (global.exchangeRates != null && global.goldExchangeRates != null) {
+			var dec = new Decimal(amount);
+			dec = dec.times(global.exchangeRates.usd).dividedBy(global.goldExchangeRates.usd);
+			var exchangedAmt = parseFloat(Math.round(dec * 100) / 100).toFixed(2);
+
+			return addThousandsSeparators(exchangedAmt) + "oz";
+		}
+	}
+
+	return "";
+}
+
+function formatExchangedGold(amount, exchangeType) {
+	if (global.exchangeRates != null && global.goldExchangeRates[exchangeType.toLowerCase()] != null) {
+		var dec = new Decimal(amount);
+		dec = dec.times(global.goldExchangeRates[exchangeType.toLowerCase()]);
+		var exchangedAmt = parseFloat(Math.round(dec * 100) / 100).toFixed(2);
+
+		if (exchangeType == "krw") {
+			return "₩" + addThousandsSeparators(exchangedAmt);
+		} else if (exchangeType == "eur") {
+			return "€" + addThousandsSeparators(exchangedAmt);
+		} else {
+			return "$" + addThousandsSeparators(exchangedAmt);
+		}
+
 	} else if (exchangeType == "au") {
 		if (global.exchangeRates != null && global.goldExchangeRates != null) {
 			var dec = new Decimal(amount);
@@ -420,7 +445,7 @@ function getMinerFromCoinbaseTx(tx) {
 	if (tx == null || tx.vin == null || tx.vin.length == 0) {
 		return null;
 	}
-	
+
 	if (global.miningPoolsConfigs) {
 		for (var i = 0; i < global.miningPoolsConfigs.length; i++) {
 			var miningPoolsConfig = global.miningPoolsConfigs[i];
@@ -519,7 +544,7 @@ function getBlockTotalFeesFromCoinbaseTxAndBlockHeight(coinbaseTx, blockHeight) 
 
 	if (blockReward < 1e-8 || blockReward == null) {
 		return totalOutput;
-		
+
 	} else {
 		return totalOutput.minus(new Decimal(blockReward));
 	}
@@ -587,12 +612,12 @@ function geoLocateIpAddresses(ipAddresses, provider) {
 		var promises = [];
 		for (var i = 0; i < ipAddresses.length; i++) {
 			var ipStr = ipAddresses[i];
-			
+
 			promises.push(new Promise(function(resolve2, reject2) {
 				ipCache.get(ipStr).then(function(result) {
 					if (result.value == null) {
 						var apiUrl = "http://api.ipstack.com/" + result.key + "?access_key=" + config.credentials.ipStackComApiAccessKey;
-						
+
 						request(apiUrl, function(error, response, body) {
 							if (error) {
 								debugLog("Failed IP-geo-lookup: " + result.key);
@@ -615,7 +640,7 @@ function geoLocateIpAddresses(ipAddresses, provider) {
 
 									} else {
 										debugLog(`Unknown location for IP-geo-lookup: ${ip}`);
-									}									
+									}
 
 									ipCache.set(ip, resBody, 1000 * 60 * 60 * 24 * 365);
 
@@ -649,7 +674,7 @@ function geoLocateIpAddresses(ipAddresses, provider) {
 
 function parseExponentStringDouble(val) {
 	var [lead,decimal,pow] = val.toString().split(/e|\./);
-	return +pow <= 0 
+	return +pow <= 0
 		? "0." + "0".repeat(Math.abs(pow)-1) + lead + decimal
 		: lead + ( +pow >= decimal.length ? (decimal + "0".repeat(+pow-decimal.length)) : (decimal.slice(0,+pow)+"."+decimal.slice(+pow)));
 }
@@ -739,7 +764,7 @@ function logError(errorId, err, optionalUserData = null) {
 	}
 
 	debugErrorLog("Error " + errorId + ": " + err + ", json: " + JSON.stringify(err) + (optionalUserData != null ? (", userData: " + optionalUserData + " (json: " + JSON.stringify(optionalUserData) + ")") : ""));
-	
+
 	if (err && err.stack) {
 		debugErrorVerboseLog("Stack: " + err.stack);
 	}

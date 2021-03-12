@@ -24,9 +24,9 @@ div.row.index-summary
 						td.text-right.text-monospace
 							span.d-xxl-none #{hashrate1dayData0[0]}
 							span.d-none.d-xxl-inline #{hashrate1dayData1[0]}
-							small.text-muted  / 
-							span.d-xxl-none #{hashrate7dayData0[0]} 
-							span.d-none.d-xxl-inline #{hashrate7dayData1[0]} 
+							small.text-muted  /
+							span.d-xxl-none #{hashrate7dayData0[0]}
+							span.d-none.d-xxl-inline #{hashrate7dayData1[0]}
 							small.border-dotted(title=`${hashrate1dayData0[1].abbreviation}H = ${hashrate1dayData0[1].name}-hash (x10^${hashrate1dayData0[1].exponent})`, data-toggle="tooltip") #{hashrate1dayData0[1].abbreviation}H/s
 
 				if (!["regtest", "signet"].includes(global.activeBlockchain))
@@ -78,7 +78,7 @@ div.row.index-summary
 						td.text-right.text-monospace
 							if (smartFeeEstimates)
 								span #{smartFeeEstimates[1]}
-								small.d-md-none  
+								small.d-md-none
 								small.text-muted /
 								span #{smartFeeEstimates[6]}
 								small.text-muted /
@@ -118,7 +118,7 @@ div.row.index-summary
 						span.border-dotted(title=diffAdjText, data-toggle="tooltip") #{timePerBlockDuration.format()}
 							if (!isNaN(diffAdjPercent))
 								small.text-muted.ml-1 (#{diffAdjSign}#{diffAdjPercent.toDP(1)}%)
-								
+
 
 	div(class=colClass)
 		h5.h6 Blockchain
@@ -179,7 +179,7 @@ div.row.index-summary
 								- var utxoCount = utils.formatLargeNumber(utxoSetSummary.txouts, 2);
 								- var utxoDataSize = utils.formatLargeNumber(utxoSetSummary.disk_size, 2);
 								span #{utxoCount[0]} #{utxoCount[1].abbreviation}
-								small.text-muted  / 
+								small.text-muted  /
 								span #{utxoDataSize[0]} #{utxoDataSize[1].abbreviation}B
 							else
 								small.text-muted.border-dotted(title=utxoCalculatingDesc, data-toggle="tooltip") calculating...
@@ -237,7 +237,7 @@ div.row.index-summary
 									span Market Cap
 								td.text-right.text-monospace
 									if (utxoSetSummary)
-										- var activeCurrency = global.currencyFormatType.length > 0 ? global.currencyFormatType : "usd";
+										- var activeCurrency = global.currencyFormatType.length > 0 ? global.currencyFormatType : "krw";
 										- var xxx = utils.formatLargeNumber(parseFloat(utxoSetSummary.total_amount) * exchangeRates[activeCurrency], 1);
 
 										if (activeCurrency == "eur")
@@ -266,4 +266,3 @@ div.row.index-summary
 								- var currencyValue = parseInt(networkVolume.d1.amt);
 								- var currencyValueDecimals = 0;
 								include ./value-display.pug
-									

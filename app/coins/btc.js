@@ -35,6 +35,14 @@ var currencyUnits = [
 	},
 	{
 		type:"exchanged",
+		name:"KRW",
+		multiplier:"krw",
+		values:["krw"],
+		decimalPlaces:2,
+		symbol:"₩"
+	},
+	{
+		type:"exchanged",
 		name:"USD",
 		multiplier:"usd",
 		values:["usd"],
@@ -95,7 +103,7 @@ module.exports = {
 		"main":	"000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f",
 		"test":	"000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943",
 		"regtest": "0f9188f13cb7b2c71f2a335e3a4fc328bf5beb436012afca590b1a11466e2206",
-		"signet":  "00000008819873e925422c1ff0f99f7cc9bbb232af63a077a480a3633bee1ef6", 
+		"signet":  "00000008819873e925422c1ff0f99f7cc9bbb232af63a077a480a3633bee1ef6",
 	},
 	genesisCoinbaseTransactionIdsByNetwork: {
 		"main":	"4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b",
@@ -753,40 +761,36 @@ module.exports = {
 		},
 	],
 	exchangeRateData:{
-		jsonUrl:"https://api.coindesk.com/v1/bpi/currentprice.json",
+		jsonUrl:"https://api.coingecko.com/api/v3/coins/bitcoin",
 		responseBodySelectorFunction:function(responseBody) {
-			//console.log("Exchange Rate Response: " + JSON.stringify(responseBody));
-
-			var exchangedCurrencies = ["USD", "GBP", "EUR"];
-
-			if (responseBody.bpi) {
+			var exchangedCurrencies = ["KRW", "USD", "GBP", "EUR"];
+			if (responseBody.market_data.current_price) {
 				var exchangeRates = {};
-
 				for (var i = 0; i < exchangedCurrencies.length; i++) {
-					if (responseBody.bpi[exchangedCurrencies[i]]) {
-						exchangeRates[exchangedCurrencies[i].toLowerCase()] = responseBody.bpi[exchangedCurrencies[i]].rate_float;
+					if (responseBody.market_data.current_price[exchangedCurrencies[i].toLowerCase()]) {
+						exchangeRates[exchangedCurrencies[i].toLowerCase()] = responseBody.market_data.current_price[exchangedCurrencies[i].toLowerCase()];
 					}
 				}
-
 				return exchangeRates;
 			}
-			
+
 			return null;
 		}
 	},
 	goldExchangeRateData:{
-		jsonUrl:"https://forex-data-feed.swissquote.com/public-quotes/bboquotes/instrument/XAU/USD",
+		jsonUrl:"https://api.coingecko.com/api/v3/coins/tether-gold",
 		responseBodySelectorFunction:function(responseBody) {
-			//console.log("Exchange Rate Response: " + JSON.stringify(responseBody));
-
-			if (responseBody[0].topo && responseBody[0].topo.platform == "MT5") {
-				var prices = responseBody[0].spreadProfilePrices[0];
-				
-				return {
-					usd: prices.ask
-				};
+			var exchangedCurrencies = ["KRW", "USD", "GBP", "EUR"];
+			if (responseBody.market_data.current_price) {
+				var goldExchangeRates = {};
+				for (var i = 0; i < exchangedCurrencies.length; i++) {
+					if (responseBody.market_data.current_price[exchangedCurrencies[i].toLowerCase()]) {
+						goldExchangeRates[exchangedCurrencies[i].toLowerCase()] = responseBody.market_data.current_price[exchangedCurrencies[i].toLowerCase()];
+					}
+				}
+				return goldExchangeRates;
 			}
-			
+
 			return null;
 		}
 	},
